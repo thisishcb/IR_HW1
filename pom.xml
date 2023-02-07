@@ -43,6 +43,13 @@
         <version>9.5.0</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-demo -->
+    <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-demo</artifactId>
+        <version>9.5.0</version>
+    </dependency>
+
     </dependencies>
 </project>
 
