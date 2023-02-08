@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-
+/* Modified from lucene Demo Searcher*/
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

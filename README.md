@@ -40,7 +40,16 @@ LA: DOCNO   DATE<p>   HEADLINE<p> TEXT<p>
 ```
 
 ## Searcher
+
+example query string  
+`"Falkland petroleum exploration What information is available on petroleum exploration in the South Atlantic near the Falkland Islands?"`
+
 ### BM25
+
+Modified from demo default Searcher  
+change the similarity scoring to `org.apache.lucene.search.similarities.BM25Similarity`
+with default parameters $k1=1.2$,$b=0.75$
+
 ### LM
 ### RM1
 ### RM3
