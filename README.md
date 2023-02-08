@@ -44,6 +44,8 @@ LA: DOCNO   DATE<p>   HEADLINE<p> TEXT<p>
 example query string  
 `"Falkland petroleum exploration What information is available on petroleum exploration in the South Atlantic near the Falkland Islands?"`
 
+parser: add escape char to all special characters in the query text
+since they are not meant to be combination.
 ### BM25
 
 Modified from demo default Searcher  
@@ -51,5 +53,10 @@ change the similarity scoring to `org.apache.lucene.search.similarities.BM25Simi
 with default parameters $k1=1.2$,$b=0.75$
 
 ### LM
+
+same as BM25, but change the `BM25Similarity` to `LMDirichletSimilarity`
+
 ### RM1
+
+
 ### RM3
