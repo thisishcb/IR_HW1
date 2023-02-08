@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-package chua.ir.hw1;
-
 /*
 Modified from org.apache.lucene.demo IndexFiles
 */
@@ -36,12 +34,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.demo.knn.DemoEmbeddings;
 import org.apache.lucene.demo.knn.KnnVectorDict;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.KnnVectorField;
-import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -52,9 +45,12 @@ import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.IOUtils;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 /**
  * Index all text files under a directory.
+ * Indexed 472525 documents in 146970 milliseconds
  *
  * <p>This is a command-line application demonstrating simple Lucene indexing. Run it with no
  * command-line arguments for usage information.
@@ -65,6 +61,8 @@ public class IndexFiles implements AutoCloseable {
     // Calculates embedding vectors for KnnVector search
     private final DemoEmbeddings demoEmbeddings;
     private final KnnVectorDict vectorDict;
+
+    static Integer docCount=0;
 
     private IndexFiles(KnnVectorDict vectorDict) throws IOException {
         if (vectorDict != null) {
@@ -84,8 +82,8 @@ public class IndexFiles implements AutoCloseable {
                         + "This indexes the documents in DOCS_PATH, creating a Lucene index"
                         + "in INDEX_PATH that can be searched with SearchFiles\n"
                         + "IF DICT_PATH contains a KnnVector dictionary, the index will also support KnnVector search";
-        String indexPath = "index";
-        String docsPath = null;
+        String indexPath = "testdata/index";
+        String docsPath = "testdata/text";
         String vectorDictSource = null;
         boolean create = true;
         for (int i = 0; i < args.length; i++) {
@@ -213,7 +211,7 @@ public class IndexFiles implements AutoCloseable {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                             try {
-                                indexDoc(writer, file, attrs.lastModifiedTime().toMillis());
+                                indexDoc(writer, file);
                             } catch (
                                     @SuppressWarnings("unused")
                                     IOException ignore) {
@@ -224,63 +222,84 @@ public class IndexFiles implements AutoCloseable {
                         }
                     });
         } else {
-            indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis());
+            try {
+                indexDoc(writer, path);
+            } catch (
+                    @SuppressWarnings("unused")
+                    IOException ignore) {
+                ignore.printStackTrace(System.err);
+                // don't index files that can't be read.
+            }
+
         }
     }
 
-    /** Indexes a single document */
-    void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
-        try (InputStream stream = Files.newInputStream(file)) {
-            // make a new, empty document
-            Document doc = new Document();
+    /* Parse a file */
+    void parseFile(Path fpath, IndexWriter writer){
+        // parse document based on resources
+        String filecontent = "";
+        try {
+            InputStream stream = Files.newInputStream(fpath);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+            filecontent = reader.lines().collect(Collectors.joining(" ")).replaceAll("[\\t\\n\\r]+"," ");
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
 
-            // Add the path of the file as a field named "path".  Use a
-            // field that is indexed (i.e. searchable), but don't tokenize
-            // the field into separate words and don't index term frequency
-            // or positional information:
-            Field pathField = new StringField("path", file.toString(), Field.Store.YES);
-            doc.add(pathField);
-
-            // Add the last modified date of the file a field named "modified".
-            // Use a LongPoint that is indexed (i.e. efficiently filterable with
-            // PointRangeQuery).  This indexes to milli-second resolution, which
-            // is often too fine.  You could instead create a number based on
-            // year/month/day/hour/minutes/seconds, down the resolution you require.
-            // For example the long value 2011021714 would mean
-            // February 17, 2011, 2-3 PM.
-            doc.add(new LongPoint("modified", lastModified));
-
-            // Add the contents of the file to a field named "contents".  Specify a Reader,
-            // so that the text of the file is tokenized and indexed, but not stored.
-            // Note that FileReader expects the file to be in UTF-8 encoding.
-            // If that's not the case searching for special characters will fail.
-            doc.add(
-                    new TextField(
-                            "contents",
-                            new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
-
-            if (demoEmbeddings != null) {
-                try (InputStream in = Files.newInputStream(file)) {
-                    float[] vector =
-                            demoEmbeddings.computeEmbedding(
-                                    new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)));
-                    doc.add(
-                            new KnnVectorField("contents-vector", vector, VectorSimilarityFunction.DOT_PRODUCT));
-                }
+        // loop through all docs in the file
+        Pattern patternDoc = Pattern.compile("(?<=<DOC>)(.*?)(?=</DOC>)", Pattern.CASE_INSENSITIVE);
+        Matcher alldocs = patternDoc.matcher(filecontent);
+        while (alldocs.find()) {
+            String str = alldocs.group();
+            String docno = regexfilter("(?<=<DOCNO>)(.*?)(?=</DOCNO>)",str);
+            String doctitle = regexfilter("(?<=<HEADLINE>)(.*?)(?=</HEADLINE>)",str);
+            if (fpath.toString().contains("/fbis/")) {
+                doctitle = regexfilter("(?<=<TI>)(.*?)(?=</TI>)",str);
             }
+            String doctxt = regexfilter("(?<=<TEXT>)(.*?)(?=</TEXT>)",str);
 
-            if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
-                // New index, so we just add the document (no old document can be there):
-                System.out.println("adding " + file);
-                writer.addDocument(doc);
-            } else {
-                // Existing index (an old copy of this document may have been indexed) so
-                // we use updateDocument instead to replace the old one matching the exact
-                // path, if present:
-                System.out.println("updating " + file);
-                writer.updateDocument(new Term("path", file.toString()), doc);
+            Document doc = new Document();
+            Field pathField = new StringField("Path", fpath.toString(), Field.Store.YES);
+            doc.add(pathField);
+            doc.add(new StringField("DOCNO", docno.toString(), Field.Store.YES));
+            doc.add(new IntField( "DOCID", docCount));
+            doc.add(new StringField("TITLE", doctitle, Field.Store.NO));
+            doc.add(new TextField("TEXT", doctitle + " " + doctxt, Field.Store.NO));
+            try {
+                if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
+                    // create new index
+                    writer.addDocument(doc);
+                } else {
+                    //update index
+                    writer.updateDocument(new Term("DOCNO", docno), doc);
+                }
+                docCount ++;
+            } catch (Exception e) {
+                System.out.println("Error at:\t" + fpath.toString() + "\t" + docCount.toString());
+                e.printStackTrace(System.err);
             }
         }
+        System.out.println("Finished:\t" + fpath.toString() + "\t" + docCount.toString());
+    }
+
+    String regexfilter(String regStr, String inStr) {
+        String outstr = "";
+        Pattern pattern2m = Pattern.compile(regStr, Pattern.CASE_INSENSITIVE);
+        Matcher matcherop = pattern2m.matcher(inStr);
+        if (matcherop.find()){
+            outstr = matcherop.group().replaceAll("<[^>]*>","").trim().replaceAll(" +", " ");
+        }
+        return outstr;
+    }
+    /** Indexes a single document */
+    void indexDoc(IndexWriter writer, Path file) throws IOException {
+        // skip readmes
+        if (file.toString().contains("read")) {
+            System.err.println("Encountered readme files, skip; file is " + file.toString());
+            throw new IOException("Should be Ignored. Skip readme files");
+        }
+        parseFile(file, writer);
+        System.out.println("Handling " + file.toString());
     }
 
     @Override

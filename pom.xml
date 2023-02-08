@@ -15,40 +15,64 @@
     </properties>
 
     <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-core</artifactId>
-        <version>9.5.0</version>
-    </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>9.5.0</version>
+        </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analyzers-common -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-analyzers-common</artifactId>
-        <version>8.11.2</version>
-    </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-common -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-common</artifactId>
+            <version>9.5.0</version>
+        </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-queryparser</artifactId>
-        <version>9.5.0</version>
-    </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queries -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-queries</artifactId>
-        <version>9.5.0</version>
-    </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>9.5.0</version>
+        </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-demo -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-demo</artifactId>
-        <version>9.5.0</version>
-    </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queries -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queries</artifactId>
+            <version>9.5.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-codecs -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-codecs</artifactId>
+            <version>9.5.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-demo -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-demo</artifactId>
+            <version>9.5.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/javax.xml/jaxp-api -->
+<!--        <dependency>-->
+<!--            <groupId>javax.xml</groupId>-->
+<!--            <artifactId>jaxp-api</artifactId>-->
+<!--            <version>1.4</version>-->
+<!--        </dependency>-->
+
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+<!--        <dependency>-->
+<!--            <groupId>commons-io</groupId>-->
+<!--            <artifactId>commons-io</artifactId>-->
+<!--            <version>2.11.0</version>-->
+<!--        </dependency>-->
+
 
     </dependencies>
 </project>
