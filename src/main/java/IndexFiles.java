@@ -282,6 +282,7 @@ public class IndexFiles implements AutoCloseable {
         System.out.println("Finished:\t" + fpath.toString() + "\t" + docCount.toString());
     }
 
+    /* Get the first match result*/
     String regexfilter(String regStr, String inStr) {
         String outstr = "";
         Pattern pattern2m = Pattern.compile(regStr, Pattern.CASE_INSENSITIVE);
@@ -291,6 +292,7 @@ public class IndexFiles implements AutoCloseable {
         }
         return outstr;
     }
+
     /** Indexes a single document */
     void indexDoc(IndexWriter writer, Path file) throws IOException {
         // skip readmes

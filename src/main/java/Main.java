@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        System.out.println("Parsing Query");
 //        File file = new File("testdata/text/fbis/fb396002");
-        Path path = Paths.get("testdata/text/ft/ft934/ft934_46");
+        Path path = Paths.get("testdata/eval/topics.351-400");
 //        System.out.println(path.toAbsolutePath().toString() + path.toString().contains("/ft/"));
         String filecontent = "";
         try {
