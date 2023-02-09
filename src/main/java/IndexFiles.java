@@ -82,7 +82,7 @@ public class IndexFiles implements AutoCloseable {
                         + "This indexes the documents in DOCS_PATH, creating a Lucene index"
                         + "in INDEX_PATH that can be searched with SearchFiles\n"
                         + "IF DICT_PATH contains a KnnVector dictionary, the index will also support KnnVector search";
-        String indexPath = "testdata/index";
+        String indexPath = "testdata/index_store";
         String docsPath = "testdata/text";
         String vectorDictSource = null;
         boolean create = true;
@@ -264,7 +264,7 @@ public class IndexFiles implements AutoCloseable {
             doc.add(new StringField("DOCNO", docno.toString(), Field.Store.YES));
             doc.add(new IntField( "DOCID", docCount));
             doc.add(new StringField("TITLE", doctitle, Field.Store.NO));
-            doc.add(new TextField("TEXT", doctitle + " " + doctxt, Field.Store.NO));
+            doc.add(new TextField("TEXT", doctitle + " " + doctxt, Field.Store.YES));
             try {
                 if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
                     // create new index

@@ -50,7 +50,7 @@ public class SearchFiles {
             System.exit(0);
         }
 
-        String index = "testdata/index";
+        String index = "testdata/index_store";
         String field = "TEXT";
         String queries = null;
         int repeat = 0;
@@ -180,7 +180,7 @@ public class SearchFiles {
                 Document doc = searcher.doc(hits[i].doc);
                 String DOCNO = doc.get("DOCNO");
                 if (DOCNO != null) {
-                    System.out.println((i+1) + ".\t" + DOCNO + "\t" + doc.get("Path"));
+                    System.out.println((i+1) + ".\t" + DOCNO + "\t" + doc.get("TEXT"));
                     String title = doc.get("TITLE");
                     if (title != null) {
                         System.out.println("   Title: " + title);
