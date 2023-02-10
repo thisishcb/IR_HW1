@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+package ir.hw1;
 /*
 Modified from org.apache.lucene.demo IndexFiles
 */
@@ -35,13 +35,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.demo.knn.DemoEmbeddings;
 import org.apache.lucene.demo.knn.KnnVectorDict;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.*;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.IOUtils;
@@ -56,62 +51,30 @@ import java.util.stream.Collectors;
  * command-line arguments for usage information.
  */
 public class IndexFiles implements AutoCloseable {
-    static final String KNN_DICT = "knn-dict";
-
-    // Calculates embedding vectors for KnnVector search
-    private final DemoEmbeddings demoEmbeddings;
-    private final KnnVectorDict vectorDict;
+//    static final String KNN_DICT = "knn-dict";
 
     static Integer docCount=0;
 
-    private IndexFiles(KnnVectorDict vectorDict) throws IOException {
-        if (vectorDict != null) {
-            this.vectorDict = vectorDict;
-            demoEmbeddings = new DemoEmbeddings(vectorDict);
-        } else {
-            this.vectorDict = null;
-            demoEmbeddings = null;
-        }
-    }
+    public IndexFiles() throws IOException {}
 
     /** Index all text files under a directory. */
-    public static void main(String[] args) throws Exception {
+    public void run(String[] args) throws Exception {
+        assert args[0] == "IndexFiles";
         String usage =
-                "java org.apache.lucene.demo.IndexFiles"
-                        + " [-index INDEX_PATH] [-docs DOCS_PATH] [-update] [-knn_dict DICT_PATH]\n\n"
-                        + "This indexes the documents in DOCS_PATH, creating a Lucene index"
-                        + "in INDEX_PATH that can be searched with SearchFiles\n"
-                        + "IF DICT_PATH contains a KnnVector dictionary, the index will also support KnnVector search";
-        String indexPath = "testdata/index_store";
-        String docsPath = "testdata/text";
-        String vectorDictSource = null;
-        boolean create = true;
-        for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
-                case "-index":
-                    indexPath = args[++i];
-                    break;
-                case "-docs":
-                    docsPath = args[++i];
-                    break;
-                case "-knn_dict":
-                    vectorDictSource = args[++i];
-                    break;
-                case "-update":
-                    create = false;
-                    break;
-                case "-create":
-                    create = true;
-                    break;
-                default:
-                    throw new IllegalArgumentException("unknown parameter " + args[i]);
-            }
+                "java -jar HW1.jar IndexFiles [IndexOutputPath] [SourcePath]\n\n";
+
+        String indexPath,docsPath;
+        if (args.length < 3) {
+            System.out.println(usage);
+            System.out.println("Start by default setting");
+            indexPath = "testdata/index"; // _store
+            docsPath = "testdata/text";
+        } else {
+            indexPath = args[1];
+            docsPath = args[2];
         }
 
-        if (docsPath == null) {
-            System.err.println("Usage: " + usage);
-            System.exit(1);
-        }
+        boolean create = true;
 
         final Path docDir = Paths.get(docsPath);
         if (!Files.isReadable(docDir)) {
@@ -146,28 +109,24 @@ public class IndexFiles implements AutoCloseable {
             //
             // iwc.setRAMBufferSizeMB(256.0);
 
-            KnnVectorDict vectorDictInstance = null;
-            long vectorDictSize = 0;
-            if (vectorDictSource != null) {
-                KnnVectorDict.build(Paths.get(vectorDictSource), dir, KNN_DICT);
-                vectorDictInstance = new KnnVectorDict(dir, KNN_DICT);
-                vectorDictSize = vectorDictInstance.ramBytesUsed();
-            }
-
-            try (IndexWriter writer = new IndexWriter(dir, iwc);
-                 IndexFiles indexFiles = new IndexFiles(vectorDictInstance)) {
-                indexFiles.indexDocs(writer, docDir);
-
-                // NOTE: if you want to maximize search performance,
-                // you can optionally call forceMerge here.  This can be
-                // a terribly costly operation, so generally it's only
-                // worth it when your index is relatively static (ie
-                // you're done adding documents to it):
-                //
-                // writer.forceMerge(1);
-            } finally {
-                IOUtils.close(vectorDictInstance);
-            }
+//            KnnVectorDict vectorDictInstance = null;
+//            long vectorDictSize = 0;
+//
+//
+//            try (IndexWriter writer = new IndexWriter(dir, iwc);
+//                 IndexFiles indexFiles = new IndexFiles(vectorDictInstance)) {
+//                indexFiles.indexDocs(writer, docDir);
+//
+//                // NOTE: if you want to maximize search performance,
+//                // you can optionally call forceMerge here.  This can be
+//                // a terribly costly operation, so generally it's only
+//                // worth it when your index is relatively static (ie
+//                // you're done adding documents to it):
+//                //
+//                // writer.forceMerge(1);
+//            } finally {
+//                IOUtils.close(vectorDictInstance);
+//            }
 
             Date end = new Date();
             try (IndexReader reader = DirectoryReader.open(dir)) {
@@ -177,12 +136,12 @@ public class IndexFiles implements AutoCloseable {
                                 + " documents in "
                                 + (end.getTime() - start.getTime())
                                 + " milliseconds");
-                if (reader.numDocs() > 100
-                        && vectorDictSize < 1_000_000
-                        && System.getProperty("smoketester") == null) {
-                    throw new RuntimeException(
-                            "Are you (ab)using the toy vector dictionary? See the package javadocs to understand why you got this exception.");
-                }
+//                if (reader.numDocs() > 100
+//                        && vectorDictSize < 1_000_000
+//                        && System.getProperty("smoketester") == null) {
+//                    throw new RuntimeException(
+//                            "Are you (ab)using the toy vector dictionary? See the package javadocs to understand why you got this exception.");
+//                }
             }
         } catch (IOException e) {
             System.out.println(" caught a " + e.getClass() + "\n with message: " + e.getMessage());
@@ -238,6 +197,11 @@ public class IndexFiles implements AutoCloseable {
     void parseFile(Path fpath, IndexWriter writer){
         // parse document based on resources
         String filecontent = "";
+        FieldType minTxtField = new FieldType();
+        minTxtField.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
+        minTxtField.setStored(true);
+        minTxtField.setStoreTermVectors(true);
+
         try {
             InputStream stream = Files.newInputStream(fpath);
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -264,7 +228,7 @@ public class IndexFiles implements AutoCloseable {
             doc.add(new StringField("DOCNO", docno.toString(), Field.Store.YES));
             doc.add(new IntField( "DOCID", docCount));
             doc.add(new StringField("TITLE", doctitle, Field.Store.NO));
-            doc.add(new TextField("TEXT", doctitle + " " + doctxt, Field.Store.YES));
+            doc.add(new Field("TEXT", doctitle + " " + doctxt, minTxtField));
             try {
                 if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
                     // create new index
@@ -306,6 +270,6 @@ public class IndexFiles implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        IOUtils.close(vectorDict);
+//        IOUtils.close(vectorDict);
     }
 }

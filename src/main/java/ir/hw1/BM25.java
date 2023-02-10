@@ -1,4 +1,11 @@
 /* Modified from lucene Demo Searcher*/
+package ir.hw1;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Date;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -10,22 +17,13 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.store.FSDirectory;
 
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
+import org.apache.lucene.search.similarities.BM25Similarity;
 /** Simple command-line based search demo. */
-public class LM {
+public class BM25 {
 
-    private LM() {}
+    private BM25() {}
 
     public static void main(String[] args) throws Exception {
         String usage =
@@ -36,7 +34,7 @@ public class LM {
         }
         String index = "testdata/index";
         String field = "TEXT";
-        String output = "testdata/LM_results.txt";
+        String output = "testdata/BM25_results.txt";
         String queries = "testdata/queries.txt";
         boolean hwformat = true;
         int topicID = 350;
@@ -116,7 +114,7 @@ public class LM {
             ,int topicID, BufferedWriter outWriter) throws IOException {
 
         // Collect enough docs to show 5 pages
-        searcher.setSimilarity(new LMDirichletSimilarity());
+        searcher.setSimilarity(new BM25Similarity((float)1.2,(float)0.75));
         TopDocs results = searcher.search(query, 1000);
         ScoreDoc[] hits = results.scoreDocs;
 

@@ -16,6 +16,7 @@
  */
 
 /* Modified from lucene Demo Searcher*/
+package ir.hw1;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -39,12 +40,12 @@ import org.apache.lucene.store.FSDirectory;
 /** Simple command-line based search demo. */
 public class SearchFiles {
 
-    private SearchFiles() {}
+    public SearchFiles() {}
 
     /** Simple command-line based search demo. */
-    public static void main(String[] args) throws Exception {
+    public  void run(String[] args) throws Exception {
         String usage =
-                "Usage:\tjava org.apache.lucene.demo.SearchFiles [-index dir] [-field f] [-repeat n] [-queries file] [-query string] [-raw] [-paging hitsPerPage]\n\nSee http://lucene.apache.org/core/4_1_0/demo/ for details.";
+                "Usage:\t java -jar HW1.jar SearchFiles [-index dir] [-field f] [-repeat n] [-queries file] [-query string] [-raw] [-paging hitsPerPage]\n\nSee http://lucene.apache.org/core/4_1_0/demo/ for details.";
         if (args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]))) {
             System.out.println(usage);
             System.exit(0);
