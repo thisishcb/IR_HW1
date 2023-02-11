@@ -20,8 +20,7 @@ XXXXXXXXX
 ```
 ## Indexer
 ```shell
-java -cp ./out/artifacts/HW1_index_jar/HW1.jar IndexFiles \
-  -index testdata/index -docs testdata/text
+java -jar HW1.jar IndexFiles testdata/index testdata/text
 ```
 
 original Indexer only index the filepath  
@@ -47,16 +46,34 @@ example query string
 parser: add escape char to all special characters in the query text
 since they are not meant to be combination.
 ### BM25
-
+```shell
+java -jar HW1.jar BM25 testdata/index testdata/eval/topics.351-400 testdata/BM25result.txt
+```
 Modified from demo default Searcher  
 change the similarity scoring to `org.apache.lucene.search.similarities.BM25Similarity`
-with default parameters $k1=1.2$,$b=0.75$
+with default parameters $k1=1.2$, $b=0.75$
 
 ### LM
-
+```shell
+java -jar HW1.jar LM testdata/index testdata/eval/topics.351-400 testdata/LMresult.txt
+```
 same as BM25, but change the `BM25Similarity` to `LMDirichletSimilarity`
 
 ### RM1
-
+```shell
+java -jar HW1.jar RM1 testdata/index testdata/eval/topics.351-400 testdata/RM1result.txt
+```
+1. Retrieve Initial 1k documents of query $Q$ with `LMDirichletSimilarity` as relevant docuements $R$
+2. Expand the query terms based on term frequencies from $R$, get expanded terms $t$
+3. get the weight of each document as $P(t|D)QL(q|D)$
+4. normalize the weights as sum up to 1
+5. re-rank the documents and output
 
 ### RM3
+```shell
+java -jar HW1.jar RM3 testdata/index testdata/eval/topics.351-400 testdata/RM3result.txt
+```
+based on RM3, instead using the normalized $P(t|D)QL(q|D)$ as weight, introduce $\lambda$,
+$\lambda=0.5$ by default, 
+The new weight is calculated as $(1-\lambda)P_{MLE}(t|q) + \lambda P(t|q)$ 
+where the MLE is calculated based on the original query

@@ -1,12 +1,5 @@
 /* Modified from lucene Demo Searcher*/
-package ir.hw1;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Date;
-
+package ir.hw1.modules;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -17,78 +10,61 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.store.FSDirectory;
 
-import org.apache.lucene.search.similarities.BM25Similarity;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
 /** Simple command-line based search demo. */
-public class BM25 {
+public class LM {
 
-    private BM25() {}
+    static final String spechar = "[\\[+\\]+:{}^~?\\\\/()><=\"!*-]";
+    public LM() {}
 
-    public static void main(String[] args) throws Exception {
+    public static void run(String[] args) throws Exception {
         String usage =
-                "Usage:\tjava -cp HW1.jar [-index dir] [-queries file] [-output output] [-query string]";
-        if (args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]))) {
-            System.out.println(usage);
-            System.exit(0);
-        }
+                "Usage:\tjava -jar HW1.jar LM [IndexPath] [QueriesPath] [Output]";
+
         String index = "testdata/index";
         String field = "TEXT";
         String output = "testdata/BM25_results.txt";
-        String queries = "testdata/queries.txt";
-        boolean hwformat = true;
-        int topicID = 350;
-        String queryString = null;
+        String queries = "testdata/eval/topics.351-400";//"testdata/queries.txt";
 
-        for(int i = 0;i < args.length;i++) {
-            if ("-index".equals(args[i])) {
-                index = args[i+1];
-                i++;
-            } else if ("-field".equals(args[i])) {
-                field = args[i+1];
-                i++;
-            } else if ("-queries".equals(args[i])) {
-                queries = args[i+1];
-                i++;
-            } else if ("-query".equals(args[i])) {
-                queryString = args[i+1];
-                i++;
-            }
+        if (args.length<4){
+            System.out.println(usage);
+            System.exit(0);
         }
+
+
+        boolean hwformat = true;
 
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
         IndexSearcher searcher = new IndexSearcher(reader);
         Analyzer analyzer = new StandardAnalyzer();
 
-        BufferedReader in = null;
-        if (queries != null) {
-            in = Files.newBufferedReader(Paths.get(queries), StandardCharsets.UTF_8);
-        }
+        List<String[]> queryparsed = ParseQuery.parse(queries);
+
         QueryParser parser = new QueryParser(field, analyzer);
 
-        String spechar = "[\\[+\\]+:{}^~?\\\\/()><=\"!]";
         BufferedWriter outWriter = null;
         try {
             FileWriter fstream = new FileWriter(output, false);
             outWriter = new BufferedWriter(fstream);
-            while (true) {
-                String line = queryString != null ? queryString : in.readLine();
-                if (line == null || line.length() == -1) {
-                    break;
-                }
-                line = line.trim();
-                if (line.length() == 0) {
-                    break;
-                }
+            for (String[] topic: queryparsed) {
+                String topicID = topic[0];
+                String line = topic[1];
+
                 line = line.replaceAll(spechar, "\\\\$0");
                 Query query = parser.parse(line);
                 //            System.out.println(query);
-                topicID++;
+
                 doSearch(searcher, query, hwformat, topicID, outWriter);
                 System.out.println("Finish Quering Topic " + topicID);
-                if (queryString != null) {
-                    break;
-                }
+
             }
             // close after writing
             if(outWriter != null) {
@@ -111,10 +87,10 @@ public class BM25 {
      *
      */
     public static void doSearch(IndexSearcher searcher, Query query, boolean hwformat
-            ,int topicID, BufferedWriter outWriter) throws IOException {
+            ,String topicID, BufferedWriter outWriter) throws IOException {
 
         // Collect enough docs to show 5 pages
-        searcher.setSimilarity(new BM25Similarity((float)1.2,(float)0.75));
+        searcher.setSimilarity(new LMDirichletSimilarity());
         TopDocs results = searcher.search(query, 1000);
         ScoreDoc[] hits = results.scoreDocs;
 

@@ -1,98 +1,72 @@
 /* Modified from lucene Demo Searcher*/
-package ir.hw1;
+package ir.hw1.modules;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-
 
 /** Simple command-line based search demo. */
 public class RM3 {
 
-    private RM3() {}
+    public RM3() {}
 
+    static double lambda = 0.5;
     static final String spechar = "[\\[+\\]+:{}^~?\\\\/()><=\"!*-]";
-    public static void main(String[] args) throws Exception {
+    public static void run(String[] args) throws Exception {
         String usage =
-                "Usage:\tjava -cp HW1.jar [-index dir] [-queries file] [-output output] [-query string]";
-        if (args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]))) {
+                "Usage:\tjava -jar HW1.jar RM3 [IndexPath] [QueriesPath] [Output] [lambda]";
+
+        String index = "testdata/index";
+        String field = "TEXT";
+        String output = "testdata/BM25_results.txt";
+        String queries = "testdata/eval/topics.351-400";//"testdata/queries.txt";
+
+        if (args.length<4){
             System.out.println(usage);
             System.exit(0);
         }
-        String index = "testdata/index_store";
-        String field = "TEXT";
-        String output = "testdata/RM3_results.txt";
-        String queries = "testdata/queries.txt";
-        double lambda = 0.7;
-        boolean hwformat = true;
-        int topicID = 350;
-        String queryString = null;
 
-        for(int i = 0;i < args.length;i++) {
-            if ("-index".equals(args[i])) {
-                index = args[i+1];
-                i++;
-            } else if ("-field".equals(args[i])) {
-                field = args[i+1];
-                i++;
-            } else if ("-queries".equals(args[i])) {
-                queries = args[i+1];
-                i++;
-            } else if ("-query".equals(args[i])) {
-                queryString = args[i+1];
-                i++;
-            }
+        if (args.length==5) {
+            double arg4 = Double.parseDouble(args[4]);
+            assert (0<=arg4)&&(arg4<=1) ;
+            lambda = arg4 ;
         }
+
+        boolean hwformat = true;
 
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
-
-        IndexSearcher initsearcher = new IndexSearcher(reader);
-        initsearcher.setSimilarity(new LMDirichletSimilarity());
+        IndexSearcher searcher = new IndexSearcher(reader);
         Analyzer analyzer = new StandardAnalyzer();
 
-        BufferedReader in = null;
-        if (queries != null) {
-            in = Files.newBufferedReader(Paths.get(queries), StandardCharsets.UTF_8);
-        }
-        QueryParser parser = new QueryParser(field, analyzer);
+        List<String[]> queryparsed = ParseQuery.parse(queries);
 
+        QueryParser parser = new QueryParser(field, analyzer);
 
         BufferedWriter outWriter = null;
         try {
             FileWriter fstream = new FileWriter(output, false);
             outWriter = new BufferedWriter(fstream);
-            while (true) {
-                String line = queryString != null ? queryString : in.readLine();
-                if (line == null || line.length() == -1) {
-                    break;
-                }
-                line = line.trim();
-                if (line.length() == 0) {
-                    break;
-                }
-                line = line.replaceAll(spechar, "\\\\$0");
+            for (String[] topic: queryparsed) {
+                String topicID = topic[0];
+                String line = topic[1];
 
+                line = line.replaceAll(spechar, "\\\\$0");
+                Query query = parser.parse(line);
                 //            System.out.println(query);
-                topicID++;
-                doSearch(initsearcher, line, hwformat, topicID, outWriter, parser, reader);
+
+                doSearch(searcher, line, topicID, outWriter,parser,reader);
                 System.out.println("Finish Quering Topic " + topicID);
-                if (queryString != null) {
-                    break;
-                }
+
             }
             // close after writing
             if(outWriter != null) {
@@ -114,8 +88,8 @@ public class RM3 {
      * is executed another time and all hits are collected.
      *
      */
-    static void doSearch(IndexSearcher searcher, String line, boolean hwformat
-            ,int topicID, BufferedWriter outWriter, QueryParser parser, IndexReader reader) throws Exception {
+    static void doSearch(IndexSearcher searcher, String line
+            ,String topicID, BufferedWriter outWriter, QueryParser parser, IndexReader reader) throws Exception {
 
         Query query = parser.parse(line);
         TopDocs results = searcher.search(query, 1000);
@@ -148,7 +122,7 @@ public class RM3 {
         // print output
         for (int i = 0; i < 1000; i++) {
             Document doc = searcher.doc(hits_rerank[i].doc);
-            System.out.println(hits_rerank[i].score);
+//            System.out.println(hits_rerank[i].score);
             String DOCNO = doc.get("DOCNO");
             if (DOCNO != null) {
                 outWriter.write(topicID +"\tQ0\t"
@@ -209,8 +183,6 @@ public class RM3 {
     static ScoreDoc[] reRankResult(ScoreDoc[] oriDocs, Query query
             ,Query expandedQuery, IndexSearcher searcher
         ) throws Exception {
-
-        double lambda = 0.5;
 
         //term prioir table for smoothing
         IndexReader idxReader= searcher.getIndexReader();

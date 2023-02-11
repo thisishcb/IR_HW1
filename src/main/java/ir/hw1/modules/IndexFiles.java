@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ir.hw1;
+package ir.hw1.modules;
 /*
 Modified from org.apache.lucene.demo IndexFiles
 */
@@ -58,7 +58,7 @@ public class IndexFiles implements AutoCloseable {
     public IndexFiles() throws IOException {}
 
     /** Index all text files under a directory. */
-    public void run(String[] args) throws Exception {
+    public static void run(String[] args) throws Exception {
         assert args[0] == "IndexFiles";
         String usage =
                 "java -jar HW1.jar IndexFiles [IndexOutputPath] [SourcePath]\n\n";
@@ -113,20 +113,18 @@ public class IndexFiles implements AutoCloseable {
 //            long vectorDictSize = 0;
 //
 //
-//            try (IndexWriter writer = new IndexWriter(dir, iwc);
-//                 IndexFiles indexFiles = new IndexFiles(vectorDictInstance)) {
-//                indexFiles.indexDocs(writer, docDir);
-//
-//                // NOTE: if you want to maximize search performance,
-//                // you can optionally call forceMerge here.  This can be
-//                // a terribly costly operation, so generally it's only
-//                // worth it when your index is relatively static (ie
-//                // you're done adding documents to it):
-//                //
-//                // writer.forceMerge(1);
-//            } finally {
-//                IOUtils.close(vectorDictInstance);
-//            }
+            try (IndexWriter writer = new IndexWriter(dir, iwc);
+                 IndexFiles indexFiles = new IndexFiles()) {
+                indexFiles.indexDocs(writer, docDir);
+
+                // NOTE: if you want to maximize search performance,
+                // you can optionally call forceMerge here.  This can be
+                // a terribly costly operation, so generally it's only
+                // worth it when your index is relatively static (ie
+                // you're done adding documents to it):
+                //
+                // writer.forceMerge(1);
+            }
 
             Date end = new Date();
             try (IndexReader reader = DirectoryReader.open(dir)) {

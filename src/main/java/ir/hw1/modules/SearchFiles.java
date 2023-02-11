@@ -16,7 +16,7 @@
  */
 
 /* Modified from lucene Demo Searcher*/
-package ir.hw1;
+package ir.hw1.modules;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -43,7 +43,7 @@ public class SearchFiles {
     public SearchFiles() {}
 
     /** Simple command-line based search demo. */
-    public  void run(String[] args) throws Exception {
+    public static void run(String[] args) throws Exception {
         String usage =
                 "Usage:\t java -jar HW1.jar SearchFiles [-index dir] [-field f] [-repeat n] [-queries file] [-query string] [-raw] [-paging hitsPerPage]\n\nSee http://lucene.apache.org/core/4_1_0/demo/ for details.";
         if (args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]))) {
