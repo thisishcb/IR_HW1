@@ -31,12 +31,16 @@ public class LM {
 
         String index = "testdata/index";
         String field = "TEXT";
-        String output = "testdata/BM25_results.txt";
+        String output = "testdata/BM25_results.txt"; // = "testdata/BM25_results.txt"
         String queries = "testdata/eval/topics.351-400";//"testdata/queries.txt";
-
+        System.out.println(args.length);
         if (args.length<4){
             System.out.println(usage);
             System.exit(0);
+        } else {
+            index = args[1];
+            queries = args[2];
+            output = args[3];
         }
 
 

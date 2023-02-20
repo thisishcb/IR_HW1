@@ -37,6 +37,10 @@ public class BM25 {
         if (args.length<4){
             System.out.println(usage);
             System.exit(0);
+        } else {
+            index = args[1];
+            queries = args[2];
+            output = args[3];
         }
 
         boolean hwformat = true;
